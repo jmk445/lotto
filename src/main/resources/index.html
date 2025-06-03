@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 로또 명당 찾기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .location-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .location-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .location-header .icon {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .location-info {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-outline {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            font-size: 16px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stores-section {
+            margin-top: 20px;
+        }
+
+        .stores-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .store-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .store-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .store-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .store-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .winning-rate {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .rate-excellent { background: #dc3545; }
+        .rate-good { background: #fd7e14; }
+        .rate-average { background: #ffc107; color: #333; }
+        .rate-low { background: #6c757d; }
+
+        .store-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .info-row .icon {
+            margin-right: 6px;
+            width: 16px;
+        }
+
+        .store-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-top: 1px solid #e9ecef;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 0;
+                margin: 0;
+                min-height: 100vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 로또 명당 찾기</h1>
+            <p>당첨 확률이 높은 가까운 로또 판매점을 찾아보세요</p>
+        </div>
+
+        <div class="content">
+            <!-- 위치 정보 카드 -->
+            <div class="location-card">
+                <div class="location-header">
+                    <span class="icon">📍</span>
+                    현재 위치
+                </div>
+                <div class="location-info" id="locationInfo">
+                    위치 정보가 없습니다
+                </div>
+                <button class="btn btn-outline" id="getLocationBtn">
+                    <span class="icon">🧭</span>
+                    <span id="locationBtnText">현재 위치 확인</span>
+                </button>
+            </div>
+
+            <!-- 검색 버튼 -->
+            <button class="btn btn-success" id="searchBtn" disabled>
+                <span id="searchBtnText">🍀 로또 명당 찾기</span>
+            </button>
+
+            <!-- 로또 명당 리스트 -->
+            <div class="stores-section hidden" id="storesSection">
+                <div class="stores-title">추천 로또 명당</div>
+                <div id="storesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 토스트 메시지 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        class LottoApp {
+            constructor() {
+                this.location = null;
+                this.stores = [];
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                document.getElementById('getLocationBtn').addEventListener('click', () => {
+                    this.getCurrentLocation();
+                });
+
+                document.getElementById('searchBtn').addEventListener('click', () => {
+                    this.searchLottoStores();
+                });
+            }
+
+            showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.className = `toast ${type} show`;
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            updateLocationButton(loading = false) {
+                const btn = document.getElementById('getLocationBtn');
+                const text = document.getElementById('locationBtnText');
+                
+                if (loading) {
+                    btn.disabled = true;
+                    text.innerHTML = '<span class="loading"></span> 위치 확인 중...';
+                } else {
+                    btn.disabled = false;
+                    text.textContent = '현재 위치 확인';
+                }
+            }
+
+            updateSearchButton(loading = false) {
+                const btn = document.getElementById('searchBtn');
+                const text = document.getElementById('searchBtnText');
+                
+                if (loading) {
+                    btn.disabled = true;
+                    text.innerHTML = '<span class="loading"></span> 검색 중...';
+                } else {
+                    btn.disabled = !this.location;
+                    text.textContent = '🍀 로또 명당 찾기';
+                }
+            }
+
+            getCurrentLocation() {
+                if (!navigator.geolocation) {
+                    this.showToast('이 브라우저는 위치 서비스를 지원하지 않습니다.', 'error');
+                    return;
+                }
+
+                this.updateLocationButton(true);
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        this.location = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude
+                        };
+
+                        document.getElementById('locationInfo').innerHTML = `
+                            위도: ${this.location.latitude.toFixed(6)}<br>
+                            경도: ${this.location.longitude.toFixed(6)}
+                        `;
+
+                        this.updateLocationButton(false);
+                        this.updateSearchButton(false);
+                        this.showToast('현재 위치를 성공적으로 가져왔습니다.');
+                    },
+                    (error) => {
+                        console.error('위치 가져오기 실패:', error);
+                        this.updateLocationButton(false);
+                        this.showToast('위치 권한을 허용해주세요.', 'error');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 300000
+                    }
+                );
+            }
+
+            async searchLottoStores() {
+                if (!this.location) {
+                    this.showToast('먼저 현재 위치를 확인해주세요.', 'error');
+                    return;
+                }
+
+                this.updateSearchButton(true);
+
+                try {
+                    // Spring Boot 서버에 요청 (실제 서버 URL로 변경 필요)
+                    const response = await fetch('http://localhost:8080/api/lotto-stores/nearby', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            latitude: this.location.latitude,
+                            longitude: this.location.longitude,
+                            radius: 5000 // 5km 반경
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('서버 응답 오류');
+                    }
+
+                    const data = await response.json();
+                    this.stores = data;
+                    this.renderStores();
+                    this.showToast(`${data.length}개의 로또 명당을 찾았습니다.`);
+
+                } catch (error) {
+                    console.error('로또 명당 검색 실패:', error);
+                    
+                    // 개발용 더미 데이터
+                    this.stores = [
+                        {
+                            id: 1,
+                            name: '행운의 로또방',
+                            address: '서울시 강남구 테헤란로 123',
+                            latitude: 37.5665,
+                            longitude: 126.978,
+                            distance: 0.5,
+                            winningRate: 85.2,
+                            recentWins: 3,
+                            phone: '02-1234-5678',
+                            openHours: '09:00 - 22:00'
+                        },
+                        {
+                            id: 2,
+                            name: '대박 복권방',
+                            address: '서울시 강남구 역삼동 456',
+                            latitude: 37.5663,
+                            longitude: 126.9779,
+                            distance: 0.8,
+                            winningRate: 78.9,
+                            recentWins: 5,
+                            phone: '02-2345-6789',
+                            openHours: '08:00 - 23:00'
+                        },
+                        {
+                            id: 3,
+                            name: '황금손 로또',
+                            address: '서울시 서초구 서초대로 789',
+                            latitude: 37.5661,
+                            longitude: 126.9778,
+                            distance: 1.2,
+                            winningRate: 92.1,
+                            recentWins: 2,
+                            phone: '02-3456-7890',
+                            openHours: '10:00 - 21:00'
+                        },
+                        {
+                            id: 4,
+                            name: '럭키세븐',
+                            address: '서울시 강남구 논현로 321',
+                            latitude: 37.5659,
+                            longitude: 126.9777,
+                            distance: 1.5,
+                            winningRate: 73.4,
+                            recentWins: 1,
+                            phone: '02-4567-8901',
+                            openHours: '07:00 - 24:00'
+                        }
+                    ];
+
+                    this.renderStores();
+                    this.showToast('개발 모드: 더미 데이터를 표시합니다.');
+                }
+
+                this.updateSearchButton(false);
+            }
+
+            formatDistance(distance) {
+                if (distance < 1) {
+                    return `${Math.round(distance * 1000)}m`;
+                }
+                return `${distance.toFixed(1)}km`;
+            }
+
+            getWinningRateClass(rate) {
+                if (rate >= 90) return 'rate-excellent';
+                if (rate >= 80) return 'rate-good';
+                if (rate >= 70) return 'rate-average';
+                return 'rate-low';
+            }
+
+            openMaps(latitude, longitude) {
+                const url = `https://maps.google.com/maps?q=${latitude},${longitude}`;
+                window.open(url, '_blank');
+            }
+
+            renderStores() {
+                const storesSection = document.getElementById('storesSection');
+                const storesList = document.getElementById('storesList');
+
+                if (this.stores.length === 0) {
+                    storesSection.classList.add('hidden');
+                    return;
+                }
+
+                storesSection.classList.remove('hidden');
+
+                storesList.innerHTML = this.stores.map(store => `
+                    <div class="store-card">
+                        <div class="store-header">
+                            <div class="store-name">${store.name}</div>
+                            <div class="winning-rate ${this.getWinningRateClass(store.winningRate)}">
+                                ${store.winningRate}%
+                            </div>
+                        </div>
+
+                        <div class="store-info">
+                            <div class="info-row">
+                                <span class="icon">📍</span>
+                                ${store.address}
+                            </div>
+                            ${store.phone ? `
+                                <div class="info-row">
+                                    <span class="icon">📞</span>
+                                    ${store.phone}
+                                </div>
+                            ` : ''}
+                            ${store.openHours ? `
+                                <div class="info-row">
+                                    <span class="icon">🕐</span>
+                                    ${store.openHours}
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="store-stats">
+                            <div class="stat">
+                                <div class="stat-value">${this.formatDistance(store.distance)}</div>
+                                <div class="stat-label">거리</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${store.winningRate}%</div>
+                                <div class="stat-label">당첨률</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${store.recentWins}회</div>
+                                <div class="stat-label">최근 당첨</div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="app.openMaps(${store.latitude}, ${store.longitude})">
+                            🗺️ 길찾기
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 앱 초기화
+        const app = new LottoApp();
+    </script>
+</body>
+</html>
